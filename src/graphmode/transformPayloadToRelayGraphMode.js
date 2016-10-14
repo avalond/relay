@@ -14,6 +14,17 @@
 
 const RelayConnectionInterface = require('RelayConnectionInterface');
 const RelayGraphModeInterface = require('RelayGraphModeInterface');
+const RelayNodeInterface = require('RelayNodeInterface');
+const RelayQuery = require('RelayQuery');
+const RelayQueryPath = require('RelayQueryPath');
+const RelayQueryVisitor = require('RelayQueryVisitor');
+const RelayRecord = require('RelayRecord');
+
+const base62 = require('base62');
+const invariant = require('invariant');
+const isCompatibleRelayFragmentType = require('isCompatibleRelayFragmentType');
+const warning = require('warning');
+
 import type {
   GraphModePayload,
   GraphRecord,
@@ -23,19 +34,9 @@ import type {
   PutRootOperation,
 } from 'RelayGraphModeInterface';
 import type {DataID, QueryPayload} from 'RelayInternalTypes';
-const RelayNodeInterface = require('RelayNodeInterface');
-const RelayQuery = require('RelayQuery');
 import type {QueryPath} from 'RelayQueryPath';
-const RelayQueryPath = require('RelayQueryPath');
 import type RelayQueryTracker from 'RelayQueryTracker';
-const RelayQueryVisitor = require('RelayQueryVisitor');
-const RelayRecord = require('RelayRecord');
 import type RelayRecordStore from 'RelayRecordStore';
-
-const base62 = require('base62');
-const invariant = require('invariant');
-const isCompatibleRelayFragmentType = require('isCompatibleRelayFragmentType');
-const warning = require('warning');
 
 const {EDGES, PAGE_INFO} = RelayConnectionInterface;
 const {
@@ -161,13 +162,17 @@ class RelayPayloadTransformer extends RelayQueryVisitor<PayloadState> {
     const id = payloadRecord[ID];
     const path = node instanceof RelayQuery.Root ?
       RelayQueryPath.create(node) :
+      // $FlowFixMe(>=0.33.0)
       RelayQueryPath.getPath(parentPath, node, id);
     if (id != null) {
+      // $FlowFixMe(>=0.33.0)
       const currentRecord = this._getOrCreateRecord(id);
+      // $FlowFixMe(>=0.33.0)
       const typeName = this._getRecordTypeName(node, id, payloadRecord);
       if (typeName != null) {
         currentRecord[TYPENAME] = typeName;
       }
+      // $FlowFixMe(>=0.33.0)
       this._recordTrackedQueries(id, node);
       this.traverse(node, {
         currentRecord,
@@ -225,6 +230,7 @@ class RelayPayloadTransformer extends RelayQueryVisitor<PayloadState> {
       'record `%s`.',
       dataID
     );
+    // $FlowFixMe(>=0.33.0)
     return typeName;
   }
 
@@ -256,6 +262,7 @@ class RelayPayloadTransformer extends RelayQueryVisitor<PayloadState> {
         (currentRecord: any)[DEFERRED_FRAGMENTS] || {};
       fragments[fragment.getCompositeHash()] = true;
     }
+    // $FlowFixMe(>=0.33.0)
     if (isCompatibleRelayFragmentType(fragment, typeName)) {
       if (fragment.isTrackingEnabled()) {
         const fragments = (currentRecord: any)[FRAGMENTS] =
@@ -267,6 +274,7 @@ class RelayPayloadTransformer extends RelayQueryVisitor<PayloadState> {
         path: RelayQueryPath.getPath(
           state.path,
           fragment,
+          // $FlowFixMe(>=0.33.0)
           currentRecord[ID]
         ),
       });
@@ -409,6 +417,7 @@ class RelayPayloadTransformer extends RelayQueryVisitor<PayloadState> {
       connectionField.getSchemaName(),
       pageInfo
     );
+    // $FlowFixMe(>=0.33.0)
     const edgeRecords = edgesData.map(edgeItem => this._writeRecord(
       state.path,
       edgesField,
